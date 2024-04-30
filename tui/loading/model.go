@@ -1,4 +1,4 @@
-package initialization
+package loading
 
 import (
 	"fmt"
@@ -11,21 +11,20 @@ import (
 type InitModel struct {
 	showLoading   bool
 	loadingString string
-	loading       spinner.Model
+	sp            spinner.Model
 	output        string
 }
 
-func NewInitModel(loading spinner.Model) InitModel {
+func New(loading spinner.Model) InitModel {
 	return InitModel{
 		showLoading:   true,
 		loadingString: "",
-		loading:       loading,
-		output:        "",
+		sp:            loading,
 	}
 }
 
 func (m InitModel) Init() tea.Cmd {
-	return m.loading.Tick
+	return m.sp.Tick
 }
 
 func (m InitModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -34,15 +33,11 @@ func (m InitModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return common.RegisterKey(m, msg)
 	case spinner.TickMsg:
 		var cmd tea.Cmd
-		m.loading, cmd = m.loading.Update(msg)
+		m.sp, cmd = m.sp.Update(msg)
 		return m, cmd
 	case SendLoadingMsg:
 		m.showLoading = true
 		m.loadingString = msg.String()
-		return m, nil
-	case SendOutput:
-		m.showLoading = false
-		m.output = msg.String()
 		return m, nil
 	}
 
@@ -51,8 +46,8 @@ func (m InitModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m InitModel) View() string {
 	if m.showLoading {
-		return styles.InfoTextStyle.Render(fmt.Sprintf("%s %s", m.loading.View(), m.loadingString))
+		return styles.InfoTextStyle.Render(fmt.Sprintf("%s %s", m.sp.View(), m.loadingString))
 	}
 
-	return styles.SuccessTextStyle.Render(m.output)
+	return ""
 }
